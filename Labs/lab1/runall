@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "./sum"
+./sum
+
+echo "./sum-pthd"
+./sum-pthd
+
+echo "./sum-oo"
+./sum-oo
+
+echo "java Sum"
+java Sum
+
+echo "./sum-omp"
+./sum-omp
+
+echo "mpirun -n 4 ./sum-mpi"
+mpirun -n 4 ./sum-mpi
+
+echo "./sum1 -nl 1"
+./sum1 -nl 1
+
+echo "./sum2 -nl 1"
+./sum2 -nl 1
