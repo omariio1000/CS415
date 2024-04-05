@@ -30,4 +30,6 @@ int main(int argc, char **argv) {
     printf("The sum is %d (should be 332833500)\n", sum);
 
   MPI_Finalize();
+
+  printf("Rank: %d\tSize: %d\n", rank, size);
 }  

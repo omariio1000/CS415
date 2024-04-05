@@ -27,6 +27,7 @@ void worker(int tid) {
   mtx.lock();
   sum += psum;
   mtx.unlock();
+  cout << "Thread " << tid << "worked on [" << low << "," << high << ")" << endl;
 } 
 
 int main(int argc, char **argv) {

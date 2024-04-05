@@ -25,6 +25,7 @@ void worker(long tid) {
   pthread_mutex_lock(&mtx);
   sum += psum;
   pthread_mutex_unlock(&mtx);
+  printf("Thread %ld worked on [%d,%d)\n", tid, low, high);
 } 
 
 int main(int argc, char **argv) {
