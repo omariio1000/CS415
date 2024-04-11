@@ -13,12 +13,20 @@
 
 int buffer[BUFSIZE];
 int idx = 0;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t notFull = PTHREAD_COND_INITIALIZER;
+pthread_cond_t notEmpty = PTHREAD_COND_INITIALIZER;
 
 void producer() { 
   printf("Producer starting\n"); 
   for (int i = 1; i <= NUMITEMS; i++) {
+    pthread_mutex_lock(&lock);
+    while (idx == BUFSIZE)
+      pthread_cond_wait(&notFull, &lock);
     buffer[idx++] = i;
     printf("Producer added %d (bsz: %d)\n", i, idx); 
+    pthread_cond_signal(&notEmpty);
+    pthread_mutex_unlock(&lock);
   }
   printf("Producer ending\n"); 
 } 
@@ -26,8 +34,13 @@ void producer() {
 void consumer() { 
   printf("Consumer starting\n");
   for (int i = 1; i <= NUMITEMS; i++) {
+    pthread_mutex_lock(&lock);
+    while (idx == 0)
+      pthread_cond_wait(&notEmpty, &lock);
     int val = buffer[--idx];
     printf("Consumer rem'd %d (bsz: %d)\n", val, idx); 
+    pthread_cond_signal(&notFull);
+    pthread_mutex_unlock(&lock);
   }
   printf("Consumer ending\n"); 
 } 
