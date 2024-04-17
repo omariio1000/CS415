@@ -9,19 +9,20 @@
 int BUFSIZE = 20;
 int NUMITEMS = 100;
 Queue queue(20);
-std::mutex mtx;
+std::mutex conMtx;
+std::mutex prodMtx;
 std::condition_variable notFull;
 std::condition_variable notEmpty;
 
 void producer() {
     printf("Producer starting on core %d\n", sched_getcpu());
     for (int i = 1; i <= NUMITEMS; i++) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(prodMtx);
         
         notFull.wait(lck, []{ return !queue.isFull(); });
         queue.add(i);
-        std::cout << "Producer added " << i << "(qsz: " << queue.size() << ")" << std::endl;
-        notEmpty.notify_one();
+        printf("Producer added %d (qsz: %d)\n", i, queue.size());
+        notEmpty.notify_all();
     }
 
     printf("Producer ending\n");
@@ -30,11 +31,11 @@ void producer() {
 void consumer() {
     std::cout << "Consumer starting on core " << sched_getcpu() << std::endl;
     for (int i = 1; i <= NUMITEMS; i++) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(conMtx);
 
         notEmpty.wait(lck, []{ return !queue.isEmpty(); });        
         printf("Consumer rem'd %d (qsz: %d)\n", queue.remove(), queue.size());
-        notFull.notify_one();
+        notFull.notify_all();
     }
     printf("Consumer ending\n");
 }

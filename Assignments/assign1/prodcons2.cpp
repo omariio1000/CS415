@@ -10,14 +10,15 @@ int BUFSIZE = 20;
 int NUMITEMS = 100;
 int numCons = 1;
 Queue queue(20);
-std::mutex mtx;
+std::mutex prodMtx;
+std::mutex conMtx;
 std::condition_variable notFull;
 std::condition_variable notEmpty;
 
 void producer() {
     printf("Producer starting on core %d\n", sched_getcpu());
     for (int i = 1; i <= NUMITEMS; i++) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(prodMtx);
         
         notFull.wait(lck, []{ return !queue.isFull(); });
         queue.add(i);
@@ -27,7 +28,7 @@ void producer() {
         lck.unlock();
     }
 
-    std::unique_lock<std::mutex> lck(mtx);
+    std::unique_lock<std::mutex> lck(prodMtx);
     for (int i = 0; i < numCons; i++) {
         notFull.wait(lck, []{ return !queue.isFull(); });
         queue.add(-1); 
@@ -43,22 +44,24 @@ void consumer(int k) {
     int counter = 0;
     int removed = 0;
     while (true) {
-        std::unique_lock<std::mutex> lck(mtx);
-
+        std::unique_lock<std::mutex> lck(conMtx);
         notEmpty.wait(lck, []{ return !queue.isEmpty(); });
+        
         removed = queue.remove();
+        lck.unlock();
+        notFull.notify_all();
+
         if (removed == -1) break;
 
         printf("C[%d] rem'd %d (qsz: %d)\n", k, removed, queue.size());
         removedArr[counter] = removed;
         counter++;
         
-        notFull.notify_all();
 
-        lck.unlock();
+        
     }
 
-    std::unique_lock<std::mutex> lck(mtx);
+    std::unique_lock<std::mutex> lck(conMtx);
     printf("Consumer stats: [");
     int sum = 0;
     for (int i = 0; i < counter; i++) {

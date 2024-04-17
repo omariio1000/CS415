@@ -11,7 +11,8 @@ int NUMITEMS = 100;
 int numProd = 1;
 int numCons = 1;
 Queue queue(20);
-std::mutex mtx;
+std::mutex prodMtx;
+std::mutex conMtx;
 std::condition_variable notFull;
 std::condition_variable notEmpty;
 
@@ -22,14 +23,13 @@ void producer(int k) {
 
     printf("Producer [%d] starting on core %d [%d..%d]\n", k, sched_getcpu(), startIdx, endIdx);
     for (int i = startIdx; i <= endIdx; i++) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(prodMtx);
         
         notFull.wait(lck, []{ return !queue.isFull(); });
         queue.add(i);
-        printf("P[%d] added %d (qsz: %d)\n", k, i, queue.size());
-        notEmpty.notify_all();
-
         lck.unlock();
+        notEmpty.notify_all();
+        printf("P[%d] added %d (qsz: %d)\n", k, i, queue.size());
     }
    
     printf("Producer [%d] ending\n", k);
@@ -41,22 +41,21 @@ void consumer(int k) {
     int counter = 0;
     int removed = 0;
     while (true) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(conMtx);
 
         notEmpty.wait(lck, []{ return !queue.isEmpty(); });
         removed = queue.remove();
+        lck.unlock();
+        notFull.notify_all();
+
         if (removed == -1) break;
 
         printf("C[%d] rem'd %d (qsz: %d)\n", k, removed, queue.size());
         removedArr[counter] = removed;
         counter++;
-        
-        notFull.notify_all();
-
-        lck.unlock();
     }
 
-    std::unique_lock<std::mutex> lck(mtx);
+    std::unique_lock<std::mutex> lck(conMtx);
     printf("Consumer stats: [");
     int sum = 0;
     for (int i = 0; i < counter; i++) {
@@ -90,7 +89,7 @@ int main(int argc, char **argv) {
         prodThd[i].join();
 
     for (int i = 0; i < numCons; i++) {
-        std::unique_lock<std::mutex> lck(mtx);
+        std::unique_lock<std::mutex> lck(conMtx);
         queue.add(-1);
     }
     notEmpty.notify_all();  
