@@ -12,6 +12,7 @@
 int main() {
   int total=0;
 
+#pragma omp parallel for reduction(+:total)
   for (int i = 0; i < N; i++) {
 #pragma omp parallel for reduction(+:total)
     for (int j = 0; j < N; j++) {
