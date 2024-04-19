@@ -13,6 +13,7 @@ void f() {
 }
 
 int main() {
+  omp_set_nested(1);
 #pragma omp parallel num_threads(2)
   {
   printf("Hello from thread %d\n", omp_get_thread_num());
