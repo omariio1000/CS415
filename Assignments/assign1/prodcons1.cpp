@@ -14,6 +14,9 @@ std::mutex prodMtx;
 std::condition_variable notFull;
 std::condition_variable notEmpty;
 
+//minimize things in critical section (like print could be cause)
+//over synchronization
+
 void producer() {
     printf("Producer starting on core %d\n", sched_getcpu());
     for (int i = 1; i <= NUMITEMS; i++) {
@@ -29,7 +32,7 @@ void producer() {
 }
 
 void consumer() {
-    std::cout << "Consumer starting on core " << sched_getcpu() << std::endl;
+    printf("Consumer starting on core %d\n", sched_getcpu());
     for (int i = 1; i <= NUMITEMS; i++) {
         std::unique_lock<std::mutex> lck(conMtx);
 
