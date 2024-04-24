@@ -9,43 +9,54 @@
 int BUFSIZE = 20;
 int NUMITEMS = 100;
 Queue queue(20);
-std::mutex conMtx;
-std::mutex prodMtx;
+std::mutex mtx;
 std::condition_variable notFull;
 std::condition_variable notEmpty;
 
-//minimize things in critical section (like print could be cause)
-//over synchronization
+// minimize things in critical section (like print could be cause)
+// over synchronization
 
-void producer() {
+void producer()
+{
     printf("Producer starting on core %d\n", sched_getcpu());
-    for (int i = 1; i <= NUMITEMS; i++) {
-        std::unique_lock<std::mutex> lck(prodMtx);
-        
-        notFull.wait(lck, []{ return !queue.isFull(); });
+    for (int i = 1; i <= NUMITEMS; i++)
+    {
+        std::unique_lock<std::mutex> lck(mtx);
+
+        notFull.wait(lck, []
+                     { return !queue.isFull(); });
         queue.add(i);
-        printf("Producer added %d (qsz: %d)\n", i, queue.size());
+        int sz = queue.size();
         notEmpty.notify_all();
+        mtx.unlock();
+
+        printf("Producer added %d (qsz: %d)\n", i, sz);
     }
 
     printf("Producer ending\n");
 }
 
-void consumer() {
+void consumer()
+{
     printf("Consumer starting on core %d\n", sched_getcpu());
-    for (int i = 1; i <= NUMITEMS; i++) {
-        std::unique_lock<std::mutex> lck(conMtx);
+    for (int i = 1; i <= NUMITEMS; i++)
+    {
+        std::unique_lock<std::mutex> lck(mtx);
 
-        notEmpty.wait(lck, []{ return !queue.isEmpty(); });        
-        printf("Consumer rem'd %d (qsz: %d)\n", queue.remove(), queue.size());
+        notEmpty.wait(lck, []
+                      { return !queue.isEmpty(); });
+        int rem = queue.remove();
+        int sz = queue.size();
         notFull.notify_all();
+        mtx.unlock();
+
+        printf("Consumer rem'd %d (qsz: %d)\n", rem, sz);
     }
     printf("Consumer ending\n");
 }
 
-
-
-int main() {
+int main()
+{
     std::thread thd1(producer), thd2(consumer);
     thd1.join();
     thd2.join();
