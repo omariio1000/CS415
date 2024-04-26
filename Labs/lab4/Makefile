@@ -6,6 +6,6 @@
 	gcc -fopenmp -g -o $@ $< -lm
 
 %: %.cpp
-	g++ -g -o $@ $< 
+	g++ -pthread -g -o $@ $< 
 
 
