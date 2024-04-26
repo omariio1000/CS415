@@ -38,9 +38,9 @@ int main(int argc, char **argv) {
 #pragma omp parallel for reduction(+:sum)
   for (int i = 0; i < N; i++) {
     sum += compute(i);
-#ifdef DEBUG
-  printf("Thread id: %d\n", omp_get_thread_num());
-#endif
+// #ifdef DEBUG
+//   printf("Thread id: %d\n", omp_get_thread_num());
+// #endif
   }
 
   gettimeofday(&end, NULL);

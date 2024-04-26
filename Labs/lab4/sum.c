@@ -31,5 +31,5 @@ int main(int argc, char **argv) {
 
 
   printf("Sum of %ld sqrt(i*i) is  %ld\n", N, sum);
-  printf("Seq-version elapsed time:  %ld us\n", end.tv_usec - start.tv_usec);
+  printf("Seq-version elapsed time:  %ld us\n", (end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec);
 }  
