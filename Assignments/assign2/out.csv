@@ -1,3 +1,4 @@
+prime-parX, N, P, Primes Found, Time (ms)
 1, 10, 1, 4, 0.429943ms
 1, 10, 2, 4, 0.728722ms
 1, 10, 4, 4, 0.662882ms
