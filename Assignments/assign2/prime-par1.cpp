@@ -51,7 +51,7 @@ void worker(int start, int end, int k, int P, const vector<int> &sieve)
         if (candidate[i])
             primesFound++;
 
-    // printf("Worker[%d] found %d primes in [%d..%d]\n", k, primesFound, startIdx, endIdx);
+    printf("Worker[%d] found %d primes in [%d..%d]\n", k, primesFound, startIdx, endIdx);
 
     lock_guard<mutex> guard(totalPrimesMutex);
     totalPrimes += primesFound;
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // printf("prime-par1 (%d threads) over [%d..%d] ...\n", P, 2, N);
+    printf("prime-par1 (%d threads) over [%d..%d] ...\n", P, 2, N);
     auto start = chrono::steady_clock::now();
     int sqrtN = sqrt(N);
     bool candidate[sqrtN + 1];
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         if (candidate[i])
             totalPrimes++;
 
-    // printf("Master found %d primes in [%d..%d]\n", totalPrimes, 2, sqrtN);
+    printf("Master found %d primes in [%d..%d]\n", totalPrimes, 2, sqrtN);
 
     thread workerTh[P];
     for (int i = 0; i < P; i++)

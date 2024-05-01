@@ -63,7 +63,7 @@ void worker(int start, int end, int k, int P)
     }
     delete[] candidate;
 
-    // printf("Worker[%d] found %d primes in [%d..%d]\n", k, primesFound, startIdx, endIdx);
+    printf("Worker[%d] found %d primes in [%d..%d]\n", k, primesFound, startIdx, endIdx);
 
     lock_guard<mutex> guard(mtx);
     totalPrimes += primesFound;
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // printf("prime-par2 (%d threads) over [%d..%d] ...\n", P, 2, N);
+    printf("prime-par2 (%d threads) over [%d..%d] ...\n", P, 2, N);
     auto start = chrono::steady_clock::now();
 
     int sqrtN = sqrt(N);
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     ready = true;
     cv.notify_all();
 
-    // printf("Master found %d primes in [%d..%d]\n", totalSieves, 2, sqrtN);
+    printf("Master found %d primes in [%d..%d]\n", totalSieves, 2, sqrtN);
 
     for (int i = 0; i < P; i++)
         workerTh[i].join();

@@ -52,7 +52,7 @@ void worker(int k, int N)
         }
     }
 
-    // printf("Worker[%d] worked on %d primes\n", k, primesWorked);
+    printf("Worker[%d] worked on %d primes\n", k, primesWorked);
 }
 
 int main(int argc, char **argv)
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // printf("prime-par3 (%d threads) over [%d..%d] ...\n", P, 2, N);
+    printf("prime-par3 (%d threads) over [%d..%d] ...\n", P, 2, N);
     auto start = chrono::steady_clock::now();
 
     int sqrtN = sqrt(N);
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
         cv.notify_all();
     }
 
-    // printf("Master found %d primes in [%d..%d]\n", totalSieves, 2, sqrtN);
+    printf("Master found %d primes in [%d..%d]\n", totalSieves, 2, sqrtN);
 
     for (int i = 0; i < P; i++)
         workerTh[i].join();
