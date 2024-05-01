@@ -114,5 +114,5 @@ int main(int argc, char **argv)
     auto end = chrono::steady_clock::now();
     auto duration = chrono::duration<double, std::milli>(end - start).count();
 
-    cout << "prime-par1 (N=" << N << ") found " << totalPrimes << " primes in " << duration << "ms\n";
+    printf("prime-par1 (N=%d, P=%d) found %d primes in %f ms\n", N, P, totalPrimes, duration);
 }
