@@ -5,5 +5,5 @@
 .PRECIOUS: %.cpp
 
 .cpp:   $*.cpp
-	g++ -g -o $@ $<
+	g++ -pthread -g -o $@ $<
 
