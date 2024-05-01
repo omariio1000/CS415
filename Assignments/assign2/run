@@ -3,14 +3,14 @@
 # Script for testing producer-consumer program (C++ version 2)
 #
 
-make prime-par1
-make prime-par2
-make prime-par3
+make prime-par1 > /dev/null 2>&1
+make prime-par2 > /dev/null 2>&1
+make prime-par3 > /dev/null 2>&1
 
 # echo $pwd   
 # echo "---------------------------"   
 # echo ./prime-par1
-./prime-par1
+# ./prime-par1
 
 for i in 10 100 1000 1000 10000 1000000
 do  #echo "---------------------------"   
@@ -24,7 +24,7 @@ done
 # echo $pwd   
 # echo "---------------------------"   
 # echo ./prime-par2
-./prime-par2
+# ./prime-par2
 
 for i in 10 100 1000 1000 10000 1000000
 do  #echo "---------------------------"   
@@ -38,7 +38,7 @@ done
 # echo $pwd   
 # echo "---------------------------"   
 # echo ./prime-par3
-./prime-par3
+# ./prime-par3
 
 for i in 10 100 1000 1000 10000 1000000
 do  #echo "---------------------------"   
