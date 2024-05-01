@@ -13,47 +13,59 @@
 #include <chrono>
 #include <mutex>
 #include <vector>
+#include <condition_variable>
+
 using namespace std;
 
-mutex totalPrimesMutex;
+mutex mtx;
+condition_variable cv;
+bool ready = false;
 int totalPrimes = 0;
+vector<int> sieve;
+int totalSieves = 0;
 
-void worker(int start, int end, int k, int P, const vector<int> &sieve)
+void worker(int start, int end, int k, int P)
 {
+    unique_lock<mutex> lk(mtx);
     int range = end - start + 1;
     int remain = range % P;
-    int startIdx = (range / P) * k + std::min(k, remain) + start;
+    int startIdx = (range / P) * k + min(k, remain) + start;
     int endIdx = startIdx + (range / P) - 1 + (k < remain ? 1 : 0);
 
     int primesFound = 0;
+    bool *candidate = new bool[endIdx - startIdx + 1];
+    for (int i = 0; i <= endIdx - startIdx; i++)
+        candidate[i] = true;
 
-    bool candidate[endIdx - startIdx + 1];
-    bool sieveArr[start];
+    int lastProcessedSieve = -1;
 
-    for (int i = 0; i < max(endIdx - startIdx + 1, start); i++)
+    while (!ready || lastProcessedSieve + 1 < totalSieves)
     {
-        if (i < range)
-            candidate[i] = true;
-        if (i < start)
-            sieveArr[i] = false;
-    }
+        cv.wait(lk, [&]
+                { return ready || lastProcessedSieve + 1 < totalSieves; });
 
-    for (int prime : sieve)
-        sieveArr[prime] = true;
-
-    for (int i = 2; i <= start - 1; i++)
-        if (sieveArr[i])
-            for (int j = i + i; j <= endIdx; j += i)
+        while (lastProcessedSieve + 1 < totalSieves)
+        {
+            int prime = sieve[lastProcessedSieve + 1];
+            int firstMultiple = max(prime * prime, ((startIdx + prime - 1) / prime) * prime);
+            for (int j = firstMultiple; j <= endIdx; j += prime)
                 if (j >= startIdx)
                     candidate[j - startIdx] = false;
+            lastProcessedSieve++;
+        }
+    }
+    lk.unlock();
 
-    for (int i = 0; i < endIdx - startIdx + 1; i++)
+    for (int i = 0; i <= endIdx - startIdx; i++)
+    {
         if (candidate[i])
             primesFound++;
+    }
+    delete[] candidate;
 
     // printf("Worker[%d] found %d primes in [%d..%d]\n", k, primesFound, startIdx, endIdx);
 
-    lock_guard<mutex> guard(totalPrimesMutex);
+    lock_guard<mutex> guard(mtx);
     totalPrimes += primesFound;
 }
 
@@ -81,11 +93,15 @@ int main(int argc, char **argv)
         }
     }
 
-    // printf("prime-par1 (%d threads) over [%d..%d] ...\n", P, 2, N);
+    // printf("prime-par2 (%d threads) over [%d..%d] ...\n", P, 2, N);
     auto start = chrono::steady_clock::now();
+
     int sqrtN = sqrt(N);
     bool candidate[sqrtN + 1];
-    vector<int> sieve;
+
+    thread workerTh[P];
+    for (int i = 0; i < P; i++)
+        workerTh[i] = thread(worker, sqrtN + 1, N, i, P);
 
     for (int i = 2; i <= sqrtN; i++)
         candidate[i] = true;
@@ -93,20 +109,19 @@ int main(int argc, char **argv)
     for (int i = 2; i <= sqrt(N); i++)
         if (candidate[i])
         {
+            lock_guard<mutex> lk(mtx);
             sieve.push_back(i);
+            totalSieves++;
+            totalPrimes++;
+            cv.notify_all();
             for (int j = i + i; j <= sqrtN; j += i)
                 candidate[j] = false;
         }
 
-    for (int i = 2; i <= sqrtN; i++)
-        if (candidate[i])
-            totalPrimes++;
+    ready = true;
+    cv.notify_all();
 
-    // printf("Master found %d primes in [%d..%d]\n", totalPrimes, 2, sqrtN);
-
-    thread workerTh[P];
-    for (int i = 0; i < P; i++)
-        workerTh[i] = thread(worker, sqrtN + 1, N, i, P, cref(sieve));
+    // printf("Master found %d primes in [%d..%d]\n", totalSieves, 2, sqrtN);
 
     for (int i = 0; i < P; i++)
         workerTh[i].join();
@@ -114,5 +129,5 @@ int main(int argc, char **argv)
     auto end = chrono::steady_clock::now();
     auto duration = chrono::duration<double, std::milli>(end - start).count();
 
-    cout << "prime-par1 (N=" << N << ") found " << totalPrimes << " primes in " << duration << "ms\n";
+    cout << "prime-par2 (N=" << N << ") found " << totalPrimes << " primes in " << duration << "ms\n";
 }
