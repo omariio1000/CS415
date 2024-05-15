@@ -27,8 +27,8 @@ proc consumer(n) {
     }
 
     var removed = cqueue.remove();
-    writeln("Consumer[", n, "] removed ", removed[1], " from buf[", removed[0], "]");
     numRemoved.writeEF(numRem + 1);
+    writeln("Consumer[", n, "] removed ", removed[1], " from buf[", removed[0], "]");
   }
 }
 
