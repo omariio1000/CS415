@@ -34,7 +34,7 @@ proc consumer(n) {
 
 proc main() {
   cobegin {
-    producer();
+    begin producer();
     for n in 1..numCons do
       begin consumer(n);  // Use 'begin' to ensure consumers run concurrently
   }
