@@ -8,7 +8,7 @@ use cqueue;
 config const numItems = 32;
 config const numCons = 2;
 
-var numRemoved: sync int = 0;  // Using sync int to count total removed items
+var numRemoved: sync int = 0;  
 
 proc producer() {
   for i in 1..numItems do {
@@ -36,6 +36,6 @@ proc main() {
   cobegin {
     begin producer();
     for n in 1..numCons do
-      begin consumer(n);  // Use 'begin' to ensure consumers run concurrently
+      begin consumer(n); 
   }
 }

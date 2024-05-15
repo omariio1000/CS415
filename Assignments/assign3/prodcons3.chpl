@@ -8,8 +8,6 @@ use cqueue;
 config const numItems = 32;
 config const numCons = 2;
 
-// var numRemoved: atomic int;
-
 proc producer() {
   for i in 1..numItems do {
     var added = cqueue.add(i);
