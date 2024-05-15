@@ -1,4 +1,4 @@
-// Oddven sort (data parallel version)
+// Oddven sort (data parallel version with early termination)
 //
 use Random;
 config const DEBUG = true;
