@@ -13,7 +13,7 @@
 
 int main(int argc, char **argv)
 {
-  int N, P, rank, *data;
+  int N, P, rank, *data, *cnt, *disp;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -27,19 +27,36 @@ int main(int argc, char **argv)
     data = malloc(N * sizeof(int));
     for (int i = 0; i < N; i++)
       data[i] = i + 1;
+
+    cnt = malloc(P * sizeof(int));
+    disp = malloc(P * sizeof(int));
+
+    int base = N / P;
+    int remain = N % P;
+
+    for (int i = 0; i < P; i++)
+    {
+      cnt[i] = base + (i < remain ? 1 : 0);
+      disp[i] = (i == 0) ? 0 : disp[i - 1] + cnt[i - 1];
+    }
   }
+  else
+  {
+    cnt = malloc(P * sizeof(int));
+    disp = malloc(P * sizeof(int));
+  }
+
   MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(cnt, P, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(disp, P, MPI_INT, 0, MPI_COMM_WORLD);
 
-  int remain = N % P;
-  int low = (N / P) * rank + (rank > remain ? remain : rank);
-  int high = low + (N / P) + (rank < remain ? 1 : 0);
-  int bsize = high - low;
-
+  int bsize = cnt[rank];
   int a[bsize];
-  MPI_Scatter(data, bsize, MPI_INT, a, bsize, MPI_INT, 0, MPI_COMM_WORLD);
+
+  MPI_Scatterv(data, cnt, disp, MPI_INT, a, bsize, MPI_INT, 0, MPI_COMM_WORLD);
 
   printf("p%d block = [%d,%d] (size=%d), a = [%d,%d,...]\n",
-         rank, low, high - 1, bsize, a[0], a[1]);
+         rank, disp[rank], disp[rank] + bsize - 1, bsize, a[0], a[1]);
 
   int psum = 0;
   for (int i = 0; i < bsize; i++)
