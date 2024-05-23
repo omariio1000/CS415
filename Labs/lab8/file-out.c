@@ -13,7 +13,7 @@
 int main(int argc, char *argv[])
 {
   int rank, buf[4], cnt=4, i;
-  char fname[20];
+  char fname[20] = "output.all\0";
   MPI_File fh;
   MPI_Status st;
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   for (i=0; i<cnt; i++) 
     buf[i] = rank*100 + i;
   // each process writes to a separate output file
-  sprintf(fname, "%s.%d", argv[1], rank);
+  sprintf(fname, "%s.all", argv[1]);
   MPI_File_open(MPI_COMM_SELF, fname, MPI_MODE_CREATE|MPI_MODE_RDWR, MPI_INFO_NULL, &fh);
   // write four integers
   MPI_File_write(fh, buf, cnt, MPI_INT, &st);
