@@ -1,0 +1,1 @@
+This lab was a second lab with MPI. Looking at how to use files was very interesting, and good practice for the upcoming assignment. The programs were very similar to previous ones with dividing blocks, but reading from files was pretty new to me. Overall, I learned a lot from this lab and am looking forward to assignment 4.
