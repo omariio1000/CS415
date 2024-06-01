@@ -24,13 +24,13 @@ na[0, PD.dim(1)] = 2.0;
 writeln("Init:");
 print(a); 
 
-config const epsilon = 0.01;  // convergence tolerance
-config const verbose = false; // printing control
+config const epsilon = 0.01;  
+config const verbose = false; 
 
-var delta: real;     // for tracking convergence 
-var t = 0;           // iteration count
+var delta: real;     
+var t = 0;           
 do {
-  forall ij in D do  // no need to update padded elements
+  forall ij in D do  
     na[ij] = (a[ij+(0,1)]+a[ij+(0,-1)]+a[ij+(1,0)]+a[ij+(-1,0)])/4.0;
   t += 1;
   delta = max reduce abs(na - a);

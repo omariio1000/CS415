@@ -1,0 +1,1 @@
+This week was an interesting lab. It was nice coming back to Chapel. I missed class one day this week, so the PGAS programming was a bit difficult for me to understand. Especially the final one, the Gauss-Seidel, this is the first lab where I'm not sure if I completed it correctly. I still really liked this lab and would like to work more on it to fix up any potential errors.
