@@ -32,7 +32,7 @@ def checkBitonic(arr, n) :
 # Driver Code
 if __name__ == "__main__" :
      
-    arr = [1,3,4,6,9,8,5,2]
+    arr = [1,4,2,3]
      
     n = len(arr)
  
